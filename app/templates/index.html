@@ -92,6 +92,41 @@
             width: 100%;
             margin: 10px 0;
         }
+
+        .info-box {
+            background-color: #e8f4f8;
+            padding: 10px 15px;
+            border-left: 4px solid #4CAF50;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .result-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .info-box ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+
+        .info-box li {
+            margin: 3px 0;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 
@@ -119,7 +154,35 @@
         </div>
 
         <div class="result" id="textResult">
-            <p>Text results will appear here...</p>
+            <div class="text-container">
+                <h3 class="section-title">Original Text:</h3>
+                <div class="result-box" id="originalTextPreview"></div>
+            </div>
+            <div class="text-container">
+                <h3 class="section-title">Preprocessed Text:</h3>
+                <div class="info-box" id="preprocessInfo" style="display: none;">
+                    Applied preprocessing:
+                    <ul>
+                        <li>Converted to lowercase</li>
+                        <li>Removed punctuation</li>
+                        <li>Removed stopwords</li>
+                        <li>Applied lemmatization</li>
+                    </ul>
+                </div>
+                <div class="result-box" id="preprocessedTextPreview"></div>
+            </div>
+            <div class="text-container">
+                <h3 class="section-title">Augmented Text:</h3>
+                <div class="info-box" id="augmentInfo" style="display: none;">
+                    Applied augmentations:
+                    <ul>
+                        <li>Synonym replacement (3 words)</li>
+                        <li>Random word swap (3 pairs)</li>
+                        <li>Random word deletion (10% probability)</li>
+                    </ul>
+                </div>
+                <div class="result-box" id="augmentedTextPreview"></div>
+            </div>
         </div>
     </div>
 
@@ -138,15 +201,32 @@
 
         <div class="result" id="imageResult">
             <div class="image-container">
-                <h3>Original Image:</h3>
+                <h3 class="section-title">Original Image:</h3>
                 <img id="originalImagePreview" class="image-preview" style="display: none;">
             </div>
             <div class="image-container">
-                <h3>Preprocessed Image:</h3>
+                <h3 class="section-title">Preprocessed Image:</h3>
+                <div class="info-box" id="imagePreprocessInfo" style="display: none;">
+                    Applied preprocessing:
+                    <ul>
+                        <li>Converted to grayscale</li>
+                        <li>Applied histogram equalization</li>
+                        <li>Applied Gaussian blur for noise reduction</li>
+                    </ul>
+                </div>
                 <img id="preprocessedImagePreview" class="image-preview" style="display: none;">
             </div>
             <div class="image-container">
-                <h3>Augmented Image:</h3>
+                <h3 class="section-title">Augmented Image:</h3>
+                <div class="info-box" id="imageAugmentInfo" style="display: none;">
+                    Applied augmentations:
+                    <ul>
+                        <li>Random rotation (90°)</li>
+                        <li>Random brightness and contrast adjustment</li>
+                        <li>Random horizontal flip</li>
+                        <li>Random noise or blur</li>
+                    </ul>
+                </div>
                 <img id="augmentedImagePreview" class="image-preview" style="display: none;">
             </div>
         </div>
@@ -167,40 +247,40 @@
 
         <div class="result" id="audioResult">
             <div class="audio-container">
-                <h3>Original Audio:</h3>
+                <h3 class="section-title">Original Audio:</h3>
                 <audio id="originalAudioPreview" controls style="display: none;"></audio>
             </div>
             <div class="audio-container">
-                <h3>Preprocessed Audio:</h3>
-                <p id="preprocessInfo" style="display: none;">
+                <h3 class="section-title">Preprocessed Audio:</h3>
+                <div class="info-box" id="audioPreprocessInfo" style="display: none;">
                     Applied preprocessing:
-                <ul>
-                    <li>Converted to mono</li>
-                    <li>Resampled to 22050Hz</li>
-                    <li>Applied noise reduction</li>
-                    <li>Normalized audio</li>
-                </ul>
-                </p>
+                    <ul>
+                        <li>Converted to mono</li>
+                        <li>Resampled to 22050Hz</li>
+                        <li>Applied noise reduction</li>
+                        <li>Normalized audio</li>
+                    </ul>
+                </div>
                 <audio id="preprocessedAudioPreview" controls style="display: none;"></audio>
                 <div id="spectrogramContainer" style="display: none;">
-                    <h4>MFCC Spectrogram:</h4>
-                    <img id="spectrogramPreview" style="width: 100%; max-width: 800px;">
+                    <h4 class="section-title">MFCC Spectrogram:</h4>
+                    <img id="spectrogramPreview" class="image-preview">
                 </div>
             </div>
             <div class="audio-container">
-                <h3>Augmented Audio:</h3>
-                <p id="augmentInfo" style="display: none;">
+                <h3 class="section-title">Augmented Audio:</h3>
+                <div class="info-box" id="audioAugmentInfo" style="display: none;">
                     Applied augmentations:
-                <ul>
-                    <li>Time stretching (0.8-1.2x)</li>
-                    <li>Pitch shifting (±4 semitones)</li>
-                    <li>Added background noise</li>
-                </ul>
-                </p>
+                    <ul>
+                        <li>Time stretching (0.8-1.2x)</li>
+                        <li>Pitch shifting (±4 semitones)</li>
+                        <li>Added background noise</li>
+                    </ul>
+                </div>
                 <audio id="augmentedAudioPreview" controls style="display: none;"></audio>
                 <div id="augmentedSpectrogramContainer" style="display: none;">
-                    <h4>Augmented MFCC Spectrogram:</h4>
-                    <img id="augmentedSpectrogramPreview" style="width: 100%; max-width: 800px;">
+                    <h4 class="section-title">Augmented MFCC Spectrogram:</h4>
+                    <img id="augmentedSpectrogramPreview" class="image-preview">
                 </div>
             </div>
         </div>
@@ -243,11 +323,57 @@
                     body: formData
                 });
                 const data = await response.json();
-                document.getElementById('textResult').innerHTML = `
-                    <h3>Upload Result:</h3>
-                    <p>${data.message}</p>
-                    <p>Sample: ${data.sample}</p>
-                `;
+                document.getElementById('originalTextPreview').innerText = data.sample;
+
+                // 다른 결과 숨기기
+                document.getElementById('preprocessInfo').style.display = 'none';
+                document.getElementById('preprocessedTextPreview').innerText = '';
+                document.getElementById('augmentInfo').style.display = 'none';
+                document.getElementById('augmentedTextPreview').innerText = '';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function showSample() {
+            try {
+                const response = await fetch('/show-sample');
+                const data = await response.json();
+                document.getElementById('originalTextPreview').innerText = data.sample || data.message;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function preprocessText() {
+            try {
+                const response = await fetch('/preprocess/text', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // 전처리 정보와 결과 표시
+                document.getElementById('preprocessInfo').style.display = 'block';
+                document.getElementById('preprocessedTextPreview').innerText = data.preprocessed_sample || data.message;
+
+                // 증강 결과 숨기기
+                document.getElementById('augmentInfo').style.display = 'none';
+                document.getElementById('augmentedTextPreview').innerText = '';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function augmentText() {
+            try {
+                const response = await fetch('/augment/text', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // 증강 정보와 결과 표시
+                document.getElementById('augmentInfo').style.display = 'block';
+                document.getElementById('augmentedTextPreview').innerText = data.augmented_sample || data.message;
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -294,6 +420,9 @@
                 // 전처리된 이미지 표시
                 document.getElementById('preprocessedImagePreview').src = `data:image/png;base64,${data.image}`;
                 document.getElementById('preprocessedImagePreview').style.display = 'block';
+
+                // 전처리 정보 표시
+                document.getElementById('imagePreprocessInfo').style.display = 'block';
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -309,49 +438,9 @@
                 // 증강된 이미지 표시
                 document.getElementById('augmentedImagePreview').src = `data:image/png;base64,${data.image}`;
                 document.getElementById('augmentedImagePreview').style.display = 'block';
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
 
-        async function showSample() {
-            try {
-                const response = await fetch('/show-sample');
-                const data = await response.json();
-                document.getElementById('textResult').innerHTML = `
-                    <h3>Sample Text:</h3>
-                    <p>${data.sample || data.message}</p>
-                `;
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        async function preprocessText() {
-            try {
-                const response = await fetch('/preprocess/text', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                document.getElementById('textResult').innerHTML = `
-                    <h3>Preprocessed Text:</h3>
-                    <p>${data.preprocessed_sample || data.message}</p>
-                `;
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        async function augmentText() {
-            try {
-                const response = await fetch('/augment/text', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                document.getElementById('textResult').innerHTML = `
-                    <h3>Augmented Text:</h3>
-                    <p>${data.augmented_sample || data.message}</p>
-                `;
+                // 증강 정보 표시
+                document.getElementById('imageAugmentInfo').style.display = 'block';
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -394,14 +483,14 @@
                 });
                 const data = await response.json();
 
-                // Show processed audio
+                // 전처리된 오디오 표시
                 document.getElementById('preprocessedAudioPreview').src = `data:audio/wav;base64,${data.audio}`;
                 document.getElementById('preprocessedAudioPreview').style.display = 'block';
 
-                // Show preprocessing info
-                document.getElementById('preprocessInfo').style.display = 'block';
+                // 전처리 정보 표시
+                document.getElementById('audioPreprocessInfo').style.display = 'block';
 
-                // Show MFCC spectrogram
+                // MFCC 스펙트로그램 표시
                 if (data.spectrogram) {
                     document.getElementById('spectrogramPreview').src = `data:image/png;base64,${data.spectrogram}`;
                     document.getElementById('spectrogramContainer').style.display = 'block';
@@ -418,14 +507,14 @@
                 });
                 const data = await response.json();
 
-                // Show augmented audio
+                // 증강된 오디오 표시
                 document.getElementById('augmentedAudioPreview').src = `data:audio/wav;base64,${data.audio}`;
                 document.getElementById('augmentedAudioPreview').style.display = 'block';
 
-                // Show augmentation info
-                document.getElementById('augmentInfo').style.display = 'block';
+                // 증강 정보 표시
+                document.getElementById('audioAugmentInfo').style.display = 'block';
 
-                // Show augmented MFCC spectrogram if available
+                // 증강된 MFCC 스펙트로그램 표시
                 if (data.spectrogram) {
                     document.getElementById('augmentedSpectrogramPreview').src = `data:image/png;base64,${data.spectrogram}`;
                     document.getElementById('augmentedSpectrogramContainer').style.display = 'block';
