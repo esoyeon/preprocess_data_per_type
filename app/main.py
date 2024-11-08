@@ -6,6 +6,8 @@ from .preprocessing import preprocess_text
 from .augmentation import augment_text
 from .image_processing import preprocess_image
 from .image_augmentation import augment_image
+from .audio_processing import preprocess_audio
+from .audio_augmentation import augment_audio
 import base64
 
 app = FastAPI(title="Text and Image Processing API")
@@ -28,6 +30,11 @@ class DataState:
     original_image: bytes = b""
     preprocessed_image: bytes = b""
     augmented_image: bytes = b""
+
+    # Audio states
+    original_audio: bytes = b""
+    preprocessed_audio: bytes = b""
+    augmented_audio: bytes = b""
 
 
 data_state = DataState()
@@ -118,4 +125,62 @@ async def augment_image_endpoint():
     return {
         "message": "Image augmented successfully",
         "image": base64.b64encode(data_state.augmented_image).decode(),
+    }
+
+
+# Audio processing endpoints
+@app.post("/upload/audio")
+async def upload_audio(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        # MP3와 WAV 모두 허용
+        if not (
+            file.filename.lower().endswith(".mp3")
+            or file.filename.lower().endswith(".wav")
+        ):
+            return JSONResponse(
+                status_code=400, content={"message": "Please upload an MP3 or WAV file"}
+            )
+
+        data_state.original_audio = content
+        return {
+            "message": "Audio uploaded successfully",
+            "audio": base64.b64encode(content).decode(),
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"Error processing audio file: {str(e)}"},
+        )
+
+
+@app.post("/preprocess/audio")
+async def preprocess_audio_endpoint():
+    if not data_state.original_audio:
+        return JSONResponse(status_code=400, content={"message": "No audio loaded yet"})
+    
+    processed_audio, spectrogram = preprocess_audio(data_state.original_audio)
+    data_state.preprocessed_audio = processed_audio
+    
+    return {
+        "message": "Audio preprocessed successfully",
+        "audio": base64.b64encode(processed_audio).decode(),
+        "spectrogram": base64.b64encode(spectrogram).decode() if spectrogram else None
+    }
+
+
+@app.post("/augment/audio")
+async def augment_audio_endpoint():
+    if not data_state.preprocessed_audio:
+        return JSONResponse(
+            status_code=400, content={"message": "Please preprocess the audio first"}
+        )
+
+    augmented_audio, spectrogram = augment_audio(data_state.preprocessed_audio)
+    data_state.augmented_audio = augmented_audio
+    
+    return {
+        "message": "Audio augmented successfully",
+        "audio": base64.b64encode(augmented_audio).decode(),
+        "spectrogram": base64.b64encode(spectrogram).decode() if spectrogram else None
     }

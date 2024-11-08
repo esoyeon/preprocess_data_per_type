@@ -80,6 +80,18 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
+        .audio-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        audio {
+            width: 100%;
+            margin: 10px 0;
+        }
     </style>
 </head>
 
@@ -89,6 +101,7 @@
     <div class="tab">
         <button class="tablinks" onclick="openTab(event, 'TextTab')" id="defaultOpen">Text Processing</button>
         <button class="tablinks" onclick="openTab(event, 'ImageTab')">Image Processing</button>
+        <button class="tablinks" onclick="openTab(event, 'AudioTab')">Audio Processing</button>
     </div>
 
     <div id="TextTab" class="tabcontent">
@@ -135,6 +148,60 @@
             <div class="image-container">
                 <h3>Augmented Image:</h3>
                 <img id="augmentedImagePreview" class="image-preview" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <div id="AudioTab" class="tabcontent">
+        <div class="container">
+            <h2>Upload Audio File</h2>
+            <input type="file" id="audioFileInput" accept="audio/*">
+            <button onclick="uploadAudio()">Upload</button>
+        </div>
+
+        <div class="container">
+            <h2>Audio Actions</h2>
+            <button onclick="preprocessAudio()">Preprocess</button>
+            <button onclick="augmentAudio()">Augment</button>
+        </div>
+
+        <div class="result" id="audioResult">
+            <div class="audio-container">
+                <h3>Original Audio:</h3>
+                <audio id="originalAudioPreview" controls style="display: none;"></audio>
+            </div>
+            <div class="audio-container">
+                <h3>Preprocessed Audio:</h3>
+                <p id="preprocessInfo" style="display: none;">
+                    Applied preprocessing:
+                <ul>
+                    <li>Converted to mono</li>
+                    <li>Resampled to 22050Hz</li>
+                    <li>Applied noise reduction</li>
+                    <li>Normalized audio</li>
+                </ul>
+                </p>
+                <audio id="preprocessedAudioPreview" controls style="display: none;"></audio>
+                <div id="spectrogramContainer" style="display: none;">
+                    <h4>MFCC Spectrogram:</h4>
+                    <img id="spectrogramPreview" style="width: 100%; max-width: 800px;">
+                </div>
+            </div>
+            <div class="audio-container">
+                <h3>Augmented Audio:</h3>
+                <p id="augmentInfo" style="display: none;">
+                    Applied augmentations:
+                <ul>
+                    <li>Time stretching (0.8-1.2x)</li>
+                    <li>Pitch shifting (±4 semitones)</li>
+                    <li>Added background noise</li>
+                </ul>
+                </p>
+                <audio id="augmentedAudioPreview" controls style="display: none;"></audio>
+                <div id="augmentedSpectrogramContainer" style="display: none;">
+                    <h4>Augmented MFCC Spectrogram:</h4>
+                    <img id="augmentedSpectrogramPreview" style="width: 100%; max-width: 800px;">
+                </div>
             </div>
         </div>
     </div>
@@ -285,6 +352,84 @@
                     <h3>Augmented Text:</h3>
                     <p>${data.augmented_sample || data.message}</p>
                 `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function uploadAudio() {
+            const fileInput = document.getElementById('audioFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an audio file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload/audio', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                // 원본 오디오 표시
+                document.getElementById('originalAudioPreview').src = `data:audio/wav;base64,${data.audio}`;
+                document.getElementById('originalAudioPreview').style.display = 'block';
+
+                // 다른 오디오 프리뷰 숨기기
+                document.getElementById('preprocessedAudioPreview').style.display = 'none';
+                document.getElementById('augmentedAudioPreview').style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function preprocessAudio() {
+            try {
+                const response = await fetch('/preprocess/audio', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // Show processed audio
+                document.getElementById('preprocessedAudioPreview').src = `data:audio/wav;base64,${data.audio}`;
+                document.getElementById('preprocessedAudioPreview').style.display = 'block';
+
+                // Show preprocessing info
+                document.getElementById('preprocessInfo').style.display = 'block';
+
+                // Show MFCC spectrogram
+                if (data.spectrogram) {
+                    document.getElementById('spectrogramPreview').src = `data:image/png;base64,${data.spectrogram}`;
+                    document.getElementById('spectrogramContainer').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function augmentAudio() {
+            try {
+                const response = await fetch('/augment/audio', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // Show augmented audio
+                document.getElementById('augmentedAudioPreview').src = `data:audio/wav;base64,${data.audio}`;
+                document.getElementById('augmentedAudioPreview').style.display = 'block';
+
+                // Show augmentation info
+                document.getElementById('augmentInfo').style.display = 'block';
+
+                // Show augmented MFCC spectrogram if available
+                if (data.spectrogram) {
+                    document.getElementById('augmentedSpectrogramPreview').src = `data:image/png;base64,${data.spectrogram}`;
+                    document.getElementById('augmentedSpectrogramContainer').style.display = 'block';
+                }
             } catch (error) {
                 console.error('Error:', error);
             }
