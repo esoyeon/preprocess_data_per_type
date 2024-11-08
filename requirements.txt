@@ -11,3 +11,4 @@ albumentations==1.4.0
 librosa==0.10.1
 soundfile==0.12.1
 matplotlib==3.8.2
+trimesh==4.0.5

@@ -8,6 +8,8 @@ from .image_processing import preprocess_image
 from .image_augmentation import augment_image
 from .audio_processing import preprocess_audio
 from .audio_augmentation import augment_audio
+from .mesh_processing import preprocess_mesh
+from .mesh_augmentation import augment_mesh
 import base64
 
 app = FastAPI(title="Text and Image Processing API")
@@ -35,6 +37,11 @@ class DataState:
     original_audio: bytes = b""
     preprocessed_audio: bytes = b""
     augmented_audio: bytes = b""
+
+    # 3D mesh states
+    original_mesh: bytes = b""
+    preprocessed_mesh: bytes = b""
+    augmented_mesh: bytes = b""
 
 
 data_state = DataState()
@@ -183,4 +190,59 @@ async def augment_audio_endpoint():
         "message": "Audio augmented successfully",
         "audio": base64.b64encode(augmented_audio).decode(),
         "spectrogram": base64.b64encode(spectrogram).decode() if spectrogram else None
+    }
+
+
+# 3D mesh processing endpoints
+@app.post("/upload/mesh")
+async def upload_mesh(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        if not file.filename.lower().endswith('.off'):
+            return JSONResponse(
+                status_code=400,
+                content={"message": "Please upload an OFF file"}
+            )
+            
+        data_state.original_mesh = content
+        processed_mesh, visualization = preprocess_mesh(content)
+        return {
+            "message": "Mesh uploaded successfully",
+            "mesh": base64.b64encode(content).decode(),
+            "visualization": base64.b64encode(visualization).decode() if visualization else None
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"Error processing mesh file: {str(e)}"}
+        )
+
+@app.post("/preprocess/mesh")
+async def preprocess_mesh_endpoint():
+    if not data_state.original_mesh:
+        return JSONResponse(status_code=400, content={"message": "No mesh loaded yet"})
+    
+    processed_mesh, visualization = preprocess_mesh(data_state.original_mesh)
+    data_state.preprocessed_mesh = processed_mesh
+    
+    return {
+        "message": "Mesh preprocessed successfully",
+        "mesh": base64.b64encode(processed_mesh).decode(),
+        "visualization": base64.b64encode(visualization).decode() if visualization else None
+    }
+
+@app.post("/augment/mesh")
+async def augment_mesh_endpoint():
+    if not data_state.preprocessed_mesh:
+        return JSONResponse(
+            status_code=400, content={"message": "Please preprocess the mesh first"}
+        )
+    
+    augmented_mesh, visualization = augment_mesh(data_state.preprocessed_mesh)
+    data_state.augmented_mesh = augmented_mesh
+    
+    return {
+        "message": "Mesh augmented successfully",
+        "mesh": base64.b64encode(augmented_mesh).decode(),
+        "visualization": base64.b64encode(visualization).decode() if visualization else None
     }

@@ -127,6 +127,13 @@
             padding-bottom: 5px;
             margin-bottom: 15px;
         }
+
+        .mesh-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -137,6 +144,7 @@
         <button class="tablinks" onclick="openTab(event, 'TextTab')" id="defaultOpen">Text Processing</button>
         <button class="tablinks" onclick="openTab(event, 'ImageTab')">Image Processing</button>
         <button class="tablinks" onclick="openTab(event, 'AudioTab')">Audio Processing</button>
+        <button class="tablinks" onclick="openTab(event, 'MeshTab')">3D Mesh Processing</button>
     </div>
 
     <div id="TextTab" class="tabcontent">
@@ -282,6 +290,55 @@
                     <h4 class="section-title">Augmented MFCC Spectrogram:</h4>
                     <img id="augmentedSpectrogramPreview" class="image-preview">
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="MeshTab" class="tabcontent">
+        <div class="container">
+            <h2>Upload 3D Mesh File</h2>
+            <input type="file" id="meshFileInput" accept=".off">
+            <button onclick="uploadMesh()">Upload</button>
+        </div>
+
+        <div class="container">
+            <h2>Mesh Actions</h2>
+            <button onclick="preprocessMesh()">Preprocess</button>
+            <button onclick="augmentMesh()">Augment</button>
+        </div>
+
+        <div class="result" id="meshResult">
+            <div class="mesh-container">
+                <h3 class="section-title">Original Mesh:</h3>
+                <div class="info-box" id="meshUploadInfo" style="display: none;">
+                    Uploaded mesh file will be displayed as a 3D visualization
+                </div>
+                <img id="originalMeshPreview" class="image-preview" style="display: none;">
+            </div>
+            <div class="mesh-container">
+                <h3 class="section-title">Preprocessed Mesh:</h3>
+                <div class="info-box" id="meshPreprocessInfo" style="display: none;">
+                    Applied preprocessing:
+                    <ul>
+                        <li>Normalized scale</li>
+                        <li>Removed duplicate vertices</li>
+                        <li>Fixed mesh orientation</li>
+                        <li>Centered the mesh</li>
+                    </ul>
+                </div>
+                <img id="preprocessedMeshPreview" class="image-preview" style="display: none;">
+            </div>
+            <div class="mesh-container">
+                <h3 class="section-title">Augmented Mesh:</h3>
+                <div class="info-box" id="meshAugmentInfo" style="display: none;">
+                    Applied augmentations:
+                    <ul>
+                        <li>Random rotation</li>
+                        <li>Random scaling (0.8-1.2x)</li>
+                        <li>Added vertex noise</li>
+                    </ul>
+                </div>
+                <img id="augmentedMeshPreview" class="image-preview" style="display: none;">
             </div>
         </div>
     </div>
@@ -518,6 +575,81 @@
                 if (data.spectrogram) {
                     document.getElementById('augmentedSpectrogramPreview').src = `data:image/png;base64,${data.spectrogram}`;
                     document.getElementById('augmentedSpectrogramContainer').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function uploadMesh() {
+            const fileInput = document.getElementById('meshFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a 3D mesh file (.off) first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload/mesh', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                // Show upload info
+                document.getElementById('meshUploadInfo').style.display = 'block';
+
+                // Show mesh visualization
+                if (data.visualization) {
+                    document.getElementById('originalMeshPreview').src = `data:image/png;base64,${data.visualization}`;
+                    document.getElementById('originalMeshPreview').style.display = 'block';
+                }
+
+                // Hide other previews
+                document.getElementById('preprocessedMeshPreview').style.display = 'none';
+                document.getElementById('augmentedMeshPreview').style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function preprocessMesh() {
+            try {
+                const response = await fetch('/preprocess/mesh', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // Show preprocessing info
+                document.getElementById('meshPreprocessInfo').style.display = 'block';
+
+                // Show preprocessed mesh visualization
+                if (data.visualization) {
+                    document.getElementById('preprocessedMeshPreview').src = `data:image/png;base64,${data.visualization}`;
+                    document.getElementById('preprocessedMeshPreview').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function augmentMesh() {
+            try {
+                const response = await fetch('/augment/mesh', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // Show augmentation info
+                document.getElementById('meshAugmentInfo').style.display = 'block';
+
+                // Show augmented mesh visualization
+                if (data.visualization) {
+                    document.getElementById('augmentedMeshPreview').src = `data:image/png;base64,${data.visualization}`;
+                    document.getElementById('augmentedMeshPreview').style.display = 'block';
                 }
             } catch (error) {
                 console.error('Error:', error);
