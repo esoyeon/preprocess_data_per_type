@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <title>Text Processing API</title>
+    <title>Text and Image Processing API</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -35,35 +35,135 @@
         button:hover {
             background-color: #45a049;
         }
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            color: black;
+        }
+
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            margin: 10px 0;
+            display: block;
+        }
+
+        .image-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Text Processing API</h1>
+    <h1>Text and Image Processing API</h1>
 
-    <div class="container">
-        <h2>Upload Text File</h2>
-        <input type="file" id="fileInput" accept=".txt">
-        <button onclick="uploadFile()">Upload</button>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'TextTab')" id="defaultOpen">Text Processing</button>
+        <button class="tablinks" onclick="openTab(event, 'ImageTab')">Image Processing</button>
     </div>
 
-    <div class="container">
-        <h2>Actions</h2>
-        <button onclick="showSample()">Show Sample</button>
-        <button onclick="preprocess()">Preprocess</button>
-        <button onclick="augment()">Augment</button>
+    <div id="TextTab" class="tabcontent">
+        <div class="container">
+            <h2>Upload Text File</h2>
+            <input type="file" id="textFileInput" accept=".txt">
+            <button onclick="uploadText()">Upload</button>
+        </div>
+
+        <div class="container">
+            <h2>Text Actions</h2>
+            <button onclick="showSample()">Show Sample</button>
+            <button onclick="preprocessText()">Preprocess</button>
+            <button onclick="augmentText()">Augment</button>
+        </div>
+
+        <div class="result" id="textResult">
+            <p>Text results will appear here...</p>
+        </div>
     </div>
 
-    <div class="result" id="result">
-        <p>Results will appear here...</p>
+    <div id="ImageTab" class="tabcontent">
+        <div class="container">
+            <h2>Upload Image File</h2>
+            <input type="file" id="imageFileInput" accept="image/*">
+            <button onclick="uploadImage()">Upload</button>
+        </div>
+
+        <div class="container">
+            <h2>Image Actions</h2>
+            <button onclick="preprocessImage()">Preprocess</button>
+            <button onclick="augmentImage()">Augment</button>
+        </div>
+
+        <div class="result" id="imageResult">
+            <div class="image-container">
+                <h3>Original Image:</h3>
+                <img id="originalImagePreview" class="image-preview" style="display: none;">
+            </div>
+            <div class="image-container">
+                <h3>Preprocessed Image:</h3>
+                <img id="preprocessedImagePreview" class="image-preview" style="display: none;">
+            </div>
+            <div class="image-container">
+                <h3>Augmented Image:</h3>
+                <img id="augmentedImagePreview" class="image-preview" style="display: none;">
+            </div>
+        </div>
     </div>
 
     <script>
-        async function uploadFile() {
-            const fileInput = document.getElementById('fileInput');
+        // Tab functionality
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Open Text tab by default
+        document.getElementById("defaultOpen").click();
+
+        // Text processing functions
+        async function uploadText() {
+            const fileInput = document.getElementById('textFileInput');
             const file = fileInput.files[0];
             if (!file) {
-                alert('Please select a file first!');
+                alert('Please select a text file first!');
                 return;
             }
 
@@ -71,12 +171,12 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch('/upload', {
+                const response = await fetch('/upload/text', {
                     method: 'POST',
                     body: formData
                 });
                 const data = await response.json();
-                document.getElementById('result').innerHTML = `
+                document.getElementById('textResult').innerHTML = `
                     <h3>Upload Result:</h3>
                     <p>${data.message}</p>
                     <p>Sample: ${data.sample}</p>
@@ -86,35 +186,108 @@
             }
         }
 
+        // Image processing functions
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an image file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload/image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                // 원본 이미지 표시
+                document.getElementById('originalImagePreview').src = `data:image/png;base64,${data.image}`;
+                document.getElementById('originalImagePreview').style.display = 'block';
+
+                // 다른 이미지 프리뷰 숨기기
+                document.getElementById('preprocessedImagePreview').style.display = 'none';
+                document.getElementById('augmentedImagePreview').style.display = 'none';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function preprocessImage() {
+            try {
+                const response = await fetch('/preprocess/image', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // 전처리된 이미지 표시
+                document.getElementById('preprocessedImagePreview').src = `data:image/png;base64,${data.image}`;
+                document.getElementById('preprocessedImagePreview').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function augmentImage() {
+            try {
+                const response = await fetch('/augment/image', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // 증강된 이미지 표시
+                document.getElementById('augmentedImagePreview').src = `data:image/png;base64,${data.image}`;
+                document.getElementById('augmentedImagePreview').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
         async function showSample() {
-            const response = await fetch('/show-sample');
-            const data = await response.json();
-            document.getElementById('result').innerHTML = `
-                <h3>Sample Text:</h3>
-                <p>${data.sample || data.message}</p>
-            `;
+            try {
+                const response = await fetch('/show-sample');
+                const data = await response.json();
+                document.getElementById('textResult').innerHTML = `
+                    <h3>Sample Text:</h3>
+                    <p>${data.sample || data.message}</p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
-        async function preprocess() {
-            const response = await fetch('/preprocess', {
-                method: 'POST'
-            });
-            const data = await response.json();
-            document.getElementById('result').innerHTML = `
-                <h3>Preprocessed Text:</h3>
-                <p>${data.preprocessed_sample || data.message}</p>
-            `;
+        async function preprocessText() {
+            try {
+                const response = await fetch('/preprocess/text', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                document.getElementById('textResult').innerHTML = `
+                    <h3>Preprocessed Text:</h3>
+                    <p>${data.preprocessed_sample || data.message}</p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
-        async function augment() {
-            const response = await fetch('/augment', {
-                method: 'POST'
-            });
-            const data = await response.json();
-            document.getElementById('result').innerHTML = `
-                <h3>Augmented Text:</h3>
-                <p>${data.augmented_sample || data.message}</p>
-            `;
+        async function augmentText() {
+            try {
+                const response = await fetch('/augment/text', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                document.getElementById('textResult').innerHTML = `
+                    <h3>Augmented Text:</h3>
+                    <p>${data.augmented_sample || data.message}</p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
     </script>
 </body>
