@@ -75,28 +75,6 @@ uvicorn app.main:app --reload
 - Audio: MP3, WAV files
 - 3D Meshes: .off files
 
-## Project Structure
-
-project/
-├── app/
-│   ├── __init__.py
-│   ├── main.py
-│   ├── preprocessing.py
-│   ├── augmentation.py
-│   ├── image_processing.py
-│   ├── image_augmentation.py
-│   ├── audio_processing.py
-│   ├── audio_augmentation.py
-│   ├── mesh_processing.py
-│   ├── mesh_augmentation.py
-│   ├── utils.py
-│   └── templates/
-│       └── index.html
-├── data/
-│   └── sample.txt
-├── demo.gif
-├── requirements.txt
-└── README.md
 
 ## License
 
