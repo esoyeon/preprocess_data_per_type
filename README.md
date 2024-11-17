@@ -1,4 +1,4 @@
-# Multi-Modal Data Processing API
+# Data Processing Demo
 
 A FastAPI-based web application that provides preprocessing and augmentation capabilities for multiple data types:
 - Text
@@ -7,7 +7,7 @@ A FastAPI-based web application that provides preprocessing and augmentation cap
 - 3D Meshes
 
 ## Demo
-![Demo](demo.gif)
+[![Demo Video](https://img.youtube.com/vi/ZJnkYTeYx7w/0.jpg)](https://youtu.be/ZJnkYTeYx7w)
 
 ## Features
 
