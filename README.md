@@ -6,6 +6,9 @@ A FastAPI-based web application that provides preprocessing and augmentation cap
 - Audio
 - 3D Meshes
 
+## Demo
+![Demo](demo.gif)
+
 ## Features
 
 ### Text Processing
@@ -91,9 +94,10 @@ project/
 │       └── index.html
 ├── data/
 │   └── sample.txt
+├── demo.gif
 ├── requirements.txt
 └── README.md
 
 ## License
 
-MIT License# preprocess_data_per_type
+MIT License
